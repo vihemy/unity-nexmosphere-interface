@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class NexmosphereController : MonoBehaviour
 {
+    public string portName = "COM3";
     private SerialPortManager serialPortManager;
 
     // Event to handle incoming data
