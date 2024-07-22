@@ -3,10 +3,17 @@ using UnityEngine;
 using UnityEngine.Events;
 
 [System.Serializable]
-public class InputCommand
+public class StaticInput
 {
     public string command;
     public UnityEvent action;
+}
+
+[System.Serializable]
+public class DynamicInput
+{
+    public string commandRoot; // Command root without the dynamic part
+    public UnityEvent<int> action; // Action to invoke with the dynamic value
 }
 
 [System.Serializable]
@@ -16,32 +23,31 @@ public class OutputCommand
     public string triggerName;
 }
 
-public class NexmosphereManager : MonoBehaviour
+public class NexmosphereManager : Singleton<NexmosphereManager>
 {
-    public string portName = "COM3";
-    public int baudRate = 11520;
-    public List<InputCommand> inputCommands = new List<InputCommand>();
+    public List<StaticInput> staticInputs = new List<StaticInput>();
     public List<OutputCommand> outputCommands = new List<OutputCommand>();
-    public List<OutputCommand> teadDownCommands = new List<OutputCommand>();
+    public List<OutputCommand> tearDownCommands = new List<OutputCommand>();
 
     private NexmosphereController nexmosphereController;
 
     private void Start()
     {
-        // Initialize NexmosphereController with appropriate settings
-        nexmosphereController = gameObject.AddComponent<NexmosphereController>();
-        nexmosphereController.Initialize(portName, baudRate);
-        nexmosphereController.OnDataReceived += HandleDataReceived;
+
     }
 
-    private void HandleDataReceived(string data)
+    public void HandleDataReceived(string data)
     {
-        foreach (var inputCommand in inputCommands)
+        Debug.Log($"Data received: {data}");
+
+        // Handle static commands
+        foreach (var staticInput in staticInputs)
         {
-            if (data.Contains(inputCommand.command))
+            if (data.Contains(staticInput.command))
             {
-                MainThreadDispatcher.RunOnMainThread(() => inputCommand.action.Invoke());
-                break;
+                Debug.Log($"Static command matched: {staticInput.command}");
+                MainThreadDispatcher.RunOnMainThread(() => staticInput.action.Invoke());
+                return;
             }
         }
     }
@@ -58,14 +64,6 @@ public class NexmosphereManager : MonoBehaviour
         }
     }
 
-    private void TearDown()
-    {
-        foreach (var teadDownCommand in teadDownCommands)
-        {
-            nexmosphereController.SendCommand(teadDownCommand.command);
-        }
-    }
-
     private void OnDestroy()
     {
         if (nexmosphereController != null)
@@ -79,4 +77,11 @@ public class NexmosphereManager : MonoBehaviour
         TearDown();
     }
 
+    private void TearDown()
+    {
+        foreach (var tearDownCommand in tearDownCommands)
+        {
+            nexmosphereController.SendCommand(tearDownCommand.command);
+        }
+    }
 }
