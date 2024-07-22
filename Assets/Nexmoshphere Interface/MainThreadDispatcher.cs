@@ -31,7 +31,7 @@ public class MainThreadDispatcher : MonoBehaviour
         }
     }
 
-    public static void RunOnMainThread(Action action) // Adds an action the the queue
+    public static void RunOnMainThread(Action action) // Adds an action to the queue
     {
         if (action == null) throw new ArgumentNullException(nameof(action));
 
