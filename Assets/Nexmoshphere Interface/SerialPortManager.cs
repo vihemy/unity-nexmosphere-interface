@@ -9,22 +9,20 @@ public class SerialPortManager : MonoBehaviour
     private Thread readThread;
     private bool isRunning;
     private string portName;
-    private int baudRate;
 
     // Event to handle incoming data
     public event Action<string> OnDataReceived;
 
     // Initialize the serial port with given settings
-    public void Initialize(string portName, int baudRate, Parity parity = Parity.None, int dataBits = 8, StopBits stopBits = StopBits.One)
+    public void Initialize(string portName, int baudRate = 115200, Parity parity = Parity.None, int dataBits = 8, StopBits stopBits = StopBits.One)
     {
         this.portName = portName;
-        this.baudRate = baudRate;
 
-        InitializeSerialPort(parity, dataBits, stopBits);
+        InitializeSerialPort(baudRate, parity, dataBits, stopBits);
         StartReadingThread();
     }
 
-    private void InitializeSerialPort(Parity parity, int dataBits, StopBits stopBits)
+    private void InitializeSerialPort(int baudRate, Parity parity, int dataBits, StopBits stopBits)
     {
         serialPort = new SerialPort(portName, baudRate, parity, dataBits, stopBits)
         {
