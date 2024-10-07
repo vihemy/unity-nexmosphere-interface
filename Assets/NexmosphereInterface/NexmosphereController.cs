@@ -5,8 +5,9 @@ public class NexmosphereController : MonoBehaviour
 {
     [SerializeField] private string portName = "COM3";
     [SerializeField] private int baudRate = 115200;
-
     private SerialPortManager serialPortManager;
+
+    public event Action<string> GetCommand; // subscribe to this event to get the message from the Nexmosphere device
 
     private void OnEnable()
     {
@@ -17,12 +18,13 @@ public class NexmosphereController : MonoBehaviour
     {
         serialPortManager = gameObject.AddComponent<SerialPortManager>();
         serialPortManager.Initialize(portName, baudRate);
-        serialPortManager.OnDataReceived += HandleDataReceived; // Receives the event so that all comunication between the Nexmosphere device and the Unity application is handled by the NexmosphereController
+        serialPortManager.OnDataReceived += HandleDataReceived;
     }
 
-    // Handle incoming data from the Nexmosphere device
+    // Forwards incoming data from the Nexmosphere SerialPortManager to subscribers of GetCommand
     private void HandleDataReceived(string data)
     {
+        GetCommand?.Invoke(data);
         Debug.Log($"NexmosphereController has received serial message: {data}");
     }
 
@@ -37,14 +39,6 @@ public class NexmosphereController : MonoBehaviour
         if (serialPortManager != null)
         {
             serialPortManager.OnDataReceived -= HandleDataReceived;
-        }
-    }
-
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            SendCommand("X003A[255]");
         }
     }
 }
