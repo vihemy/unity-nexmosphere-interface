@@ -17,10 +17,12 @@ public class SerialPortManager : MonoBehaviour
     // Initialize the serial port with given settings
     public void Initialize(string portName, int baudRate, Parity parity = Parity.None, int dataBits = 8, StopBits stopBits = StopBits.One)
     {
+
         this.portName = portName;
         this.baudRate = baudRate;
 
         InitializeSerialPort(parity, dataBits, stopBits);
+        CreateMainThreadDispatcher();
         StartReadingThread();
     }
 
@@ -39,8 +41,13 @@ public class SerialPortManager : MonoBehaviour
         }
         catch (Exception e)
         {
-            MainThreadDispatcher.RunOnMainThread(() => Debug.LogError($"Failed to open serial port: {e.Message}"));
+            Debug.LogError($"Failed to open serial port: {e.Message}");
         }
+    }
+
+    private void CreateMainThreadDispatcher()
+    {
+        gameObject.AddComponent<MainThreadDispatcher>();
     }
 
     private void StartReadingThread()
@@ -58,6 +65,7 @@ public class SerialPortManager : MonoBehaviour
             {
                 string message = serialPort.ReadLine();
                 MainThreadDispatcher.RunOnMainThread(() => OnDataReceived?.Invoke(message));
+
             }
             catch (TimeoutException) { }
             catch (Exception e)
