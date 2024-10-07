@@ -25,7 +25,6 @@ public class NexmosphereController : MonoBehaviour
     private void HandleDataReceived(string data)
     {
         GetCommand?.Invoke(data);
-        Debug.Log($"NexmosphereController has received serial message: {data}");
     }
 
     // Send a message to the Nexmosphere device
